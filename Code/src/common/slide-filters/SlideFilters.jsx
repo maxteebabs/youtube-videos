@@ -1,3 +1,4 @@
+/* eslint-disable */
 import 'rc-slider/assets/index.css';
 import 'rc-tooltip/assets/bootstrap.css';
 import React, { Component } from 'react';
@@ -13,14 +14,12 @@ import Slider from 'rc-slider';
 
 import './SlideFilters.scss';
 import { appConfig } from '../../config';
+import Axios from 'axios';
+import { YoutubeService } from '../../services/youtube/Youtube';
 
 const countryList = appConfig.countryList;
-const categoriesList = [
-  {name: 'Film & Animation', id: 1},
-  {name: 'Autos & Vehicles', id: 2},
-  {name: 'Music', id: 10},
-  {name: 'Pets & Animals', id: 4}
-];
+
+const service = new YoutubeService();
 
 const Handle = Slider.Handle;
 
@@ -65,7 +64,7 @@ function renderSuggestion({suggestion, index, itemProps, highlightedIndex, selec
   return (
     <MenuItem
       {...itemProps}
-      key={suggestion.name}
+      key={index}
       selected={isHighlighted}
       component="div"
       style={{
@@ -87,20 +86,64 @@ renderSuggestion.propTypes = {
 
 
 class SlideFilters extends Component {
+  constructor(props) {
+    super(props);
+    this.state =  {
+      isError: false,
+      categoriesList: [],
+    };
+  }
+  componentWillMount() {
+    this.props.onChanges(() => this.loadCategories());
+  }
+  async loadCategories() {
+    Axios.all(await service.getCategories())
+    .then((data) =>  {
+      this.setState({categoriesList: data});
+    })
+    .catch((err) => {
+      this.setState({isError: true});
+      console.log(err);
+    });
+  }
+  handleCountryFilter(inputValue) {
+    //filter from the country array
+    let country = countryList.find(
+      (country) => country.name.toLowerCase() == inputValue.toLowerCase());
+    if(country) {
+      //store in local storage
+      localStorage.setItem('countryName', country.name);
+      localStorage.setItem('countryCode', country.code);
+      this.props.config.defaultRegion = country.code;
+      this.props.onChanges();
+    }
+  }
+  handleCategoryFilter(inputValue) {
+    let category = this.state.categoriesList.find(
+      (category) => category.name.toLowerCase() == inputValue.toLowerCase());
+    if(category) {
+      localStorage.setItem('categoryName', category.name);
+      localStorage.setItem('categoryID', category.id);
+      this.props.config.defaultCategoryId = category.id;
+      this.props.onChanges();
+
+    }
+  }
   render() {
     const videosToLoadChange = (val) => {
       this.props.config.maxVideosToLoad = val;
       this.props.onChanges();
     };
+    let { categoriesList } = this.state;
     return (
       <div className="slide-filters-container">
         <h3 className="title">
           Filters
-          <Button className="mat-icon-button">
+          <Button className="mat-icon-button" onClick={this.props.toggleDrawer(false)}>
             <CloseIcon aria-label="Close"/>
           </Button>
         </h3>
-        <Downshift id="countrySelect">
+        <Downshift id="countrySelect" onInputValueChange={ this.handleCountryFilter.bind(this)} >
           {({
               getInputProps,
               getItemProps,
@@ -112,8 +155,10 @@ class SlideFilters extends Component {
             <div>
               {renderInput({
                 fullWidth : true,
-                InputProps: getInputProps(),
-                label     : 'Select Country'
+                InputProps: getInputProps({value: localStorage.getItem('countryName') || ''}),
+                label     : 'Select Country',
+                onChange  : this.handleCountryFilter.bind(this),
+                autoFocus: true
               })}
               <div {...getMenuProps()}>
                 {isOpen ? (
@@ -134,7 +179,7 @@ class SlideFilters extends Component {
           )}
         </Downshift>
         <div className="divider"/>
-        <Downshift id="categorySelect">
+        <Downshift id="categorySelect" onInputValueChange={ this.handleCategoryFilter.bind(this)} >
           {({
               getInputProps,
               getItemProps,
@@ -146,8 +191,9 @@ class SlideFilters extends Component {
             <div>
               {renderInput({
                 fullWidth : true,
-                InputProps: getInputProps(),
-                label     : 'Select Category'
+                InputProps: getInputProps({value: localStorage.getItem('categoryName') || ''}),
+                label     : 'Select Category',
+                onChange  : this.handleCategoryFilter.bind(this)
               })}
               <div {...getMenuProps()}>
                 {isOpen ? (
@@ -186,7 +232,8 @@ class SlideFilters extends Component {
 
 SlideFilters.propTypes = {
   config   : PropTypes.object,
-  onChanges: PropTypes.func
+  onChanges: PropTypes.func,
+  toggleDrawer: PropTypes.func
 };
 
 export default SlideFilters;

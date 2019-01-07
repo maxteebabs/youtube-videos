@@ -11,13 +11,20 @@ import SlideFilters from '../slide-filters/SlideFilters';
 class Header extends Component {
   state = {
     drawerIsOpened: false,
-    title: ''
+    title: '',
+    filterStatus: true
   };
 
   constructor(props) {
     super(props);
     setTimeout(() => {
       this.setState({title : this.props.setTitle()});
+      if(this.props.toggleFilterButton() === 'show') {
+        this.setState({filterStatus: true});
+      }else{
+        this.setState({filterStatus: false});
+      }
+      
     }, 100);
   }
 
@@ -37,15 +44,21 @@ class Header extends Component {
           <div className="opened-module-title">
             {this.state.title}
           </div>
-          <Button className="menu-toggle" onClick={this.toggleDrawer(true)}>
-            <SettingsIcon aria-label="Settings"/>
-          </Button>
+          {
+            this.state.filterStatus ? 
+            <Button className="menu-toggle" onClick={this.toggleDrawer(true)}>
+              <SettingsIcon aria-label="Settings"/>
+            </Button> : null
+          }
+          
         </nav>
         <Drawer
           anchor="right"
           open={this.state.drawerIsOpened}
           onClose={this.toggleDrawer(false)}>
-            <SlideFilters config={this.props.config} onChanges={this.props.onChanges}/>
+            <SlideFilters config={this.props.config} 
+              toggleDrawer={this.toggleDrawer} 
+              onChanges={this.props.onChanges} />
         </Drawer>
       </div>
     );
@@ -55,7 +68,8 @@ class Header extends Component {
 Header.propTypes = {
   setTitle: PropTypes.func,
   config: PropTypes.object,
-  onChanges: PropTypes.func
+  onChanges: PropTypes.func,
+  toggleFilterButton: PropTypes.func
 };
 
 export default Header;

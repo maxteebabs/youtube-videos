@@ -23,17 +23,27 @@ const setTitle = (title) => {
   return titleStore;
 };
 
+let filterButton = 'show';
+const toggleFilterButton = (status) => {
+  if(status) {
+    filterButton = status;
+  }
+  return filterButton;
+};
+
 class App extends Component {
   render() {
     return (
       <Router>
         <div>
-          <Header config={config} onChanges={onChanges} setTitle={setTitle}/>
+          <Header config={config} onChanges={onChanges} setTitle={setTitle} 
+            toggleFilterButton={toggleFilterButton} />
           <Switch>
             <Route exact path="/" render={() => (<Redirect to="/youtube"/>)}/>
             <Route exact path="/youtube" render={()=><Youtube
               config={config} onChanges={onChanges} setTitle={setTitle}/>}/>
-            <Route exact path="/youtube/:videoId" component={YoutubePlayer}/>
+            <Route exact path="/youtube/:videoId" render={() => <YoutubePlayer
+               toggleFilterButton={toggleFilterButton} /> } />
           </Switch>
         </div>
       </Router>

@@ -73,46 +73,44 @@ class Youtube extends Component {
     }
   }
   youtubeCard() {
-    let items = [];
-    let trends =  this.state.trends.map((videos, index) => {
-      items.push(
-        <div key={index} className="card-container">
-          <div className="card" onClick={this.openVideo.bind(videos.id)}>
-            <div className="img-container">
-              <img src={videos.thumbnail} alt={videos.title}/>
-              <MovieIcon/>
-            </div>
-            <div className="video-statistic">
-              <div className="publishedAt">
-                <AvTimerIcon/>
-                <span>{videos.publishedAt}</span>
-              </div>
-              <div className="viewCount">
-                <VisibilityIcon/>
-                <span>{videos.viewCount}</span>
-              </div>
-              <div className="likeCount" onClick={(e) => { e.stopPropagation(); 
-                              this.likeCount(index)}}>
-                <FavoriteIcon/>
-                <span>{videos.likeCount}</span>
-              </div>
-            </div>
-            <p className="video-title text-ellipsis">
-              {videos.title}
-            </p>
+    let trends =  this.state.trends.map((videos, index) =>
+      <div key={index} className="card-container">
+        <div className="card" onClick={this.openVideo.bind(videos.id)}>
+          <div className="img-container">
+            <img src={videos.thumbnail} alt={videos.title}/>
+            <MovieIcon/>
           </div>
+          <div className="video-statistic">
+            <div className="publishedAt">
+              <AvTimerIcon/>
+              <span>{videos.publishedAt}</span>
+            </div>
+            <div className="viewCount">
+              <VisibilityIcon/>
+              <span>{videos.viewCount}</span>
+            </div>
+            <div className="likeCount" onClick={(e) => { e.stopPropagation(); 
+                            this.likeCount(index)}}>
+              <FavoriteIcon/>
+              <span>{videos.likeCount}</span>
+            </div>
+          </div>
+          <p className="video-title text-ellipsis">
+            {videos.title}
+          </p>
         </div>
-      );
-      
-    });
-
+      </div>
+    );
     return ( 
       <InfiniteScroll
         pageStart={0}
-        loadMore={this.loadVideos()}
-        hasMore={true}
-        loader={<div className="loader" key={0}>Loading ...</div>}>
+        loadMore={this.loadItems.bind(this)}
+        hasMore={this.state.hasMoreItems}
+        loader={loader}>
+
+        <div className="tracks">
             {items}
+        </div>
     </InfiniteScroll>);
   }
 
