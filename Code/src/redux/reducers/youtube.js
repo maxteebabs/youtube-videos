@@ -1,11 +1,12 @@
    /* eslint-disable */
    import { combineReducers } from 'redux';
-    import { CHANGE_CATEGORY, CHANGE_REGION, MAX_VIDEOS_TO_LOAD } from '../actionTypes';
+    import { CHANGE_CATEGORY, CHANGE_REGION, MAX_VIDEOS_TO_LOAD, LOAD_VIDEOS } from '../actionTypes';
 
     const initialState = {
         region: null,
         categoryID: null,
-        maxVideosToLoad: null
+        maxVideosToLoad: null,
+        loadVideosFn: null
     };
     function reducer( state = initialState, action) {
         switch(action.type) {
@@ -24,10 +25,14 @@
                     ...state,
                     maxVideosToLoad:action.data.maxVideosToLoad
                 };
+            case LOAD_VIDEOS: 
+                return {
+                    ...state,
+                    loadVideosFn: action.data.loadVideosFn
+                };
             default:
                 return state;
         }
-
     }
     const reducers = combineReducers({reducer});
     export default reducers;

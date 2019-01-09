@@ -17,6 +17,8 @@ import { appConfig } from '../../config';
 import Axios from 'axios';
 import { YoutubeService } from '../../services/youtube/Youtube';
 
+import {connect} from 'react-redux';
+
 const countryList = appConfig.countryList;
 
 const service = new YoutubeService();
@@ -115,7 +117,7 @@ class SlideFilters extends Component {
       localStorage.setItem('countryName', country.name);
       localStorage.setItem('countryCode', country.code);
       this.props.config.defaultRegion = country.code;
-      this.props.onChanges();
+      this.props.loadVideos();
     }
   }
   handleCategoryFilter(inputValue) {
@@ -125,8 +127,7 @@ class SlideFilters extends Component {
       localStorage.setItem('categoryName', category.name);
       localStorage.setItem('categoryID', category.id);
       this.props.config.defaultCategoryId = category.id;
-      this.props.onChanges();
-
+      this.props.loadVideos();
     }
   }
   render() {
@@ -236,4 +237,11 @@ SlideFilters.propTypes = {
   toggleDrawer: PropTypes.func
 };
 
-export default SlideFilters;
+// export default SlideFilters;
+const mapStateToProps = state =>
+{
+  return {
+    loadVideos: state.reducer.loadVideosFn
+  }
+}
+export default connect(mapStateToProps)(SlideFilters);

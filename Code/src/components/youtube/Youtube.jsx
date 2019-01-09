@@ -12,6 +12,9 @@ import { YoutubeService } from '../../services/youtube/Youtube';
 import './Youtube.scss';
 import InfiniteScroll from 'react-infinite-scroller';
 
+import { loadVideos } from '../../redux/actions';
+import { connect } from 'react-redux';
+
 const service = new YoutubeService();
 
 class Youtube extends Component {
@@ -20,25 +23,66 @@ class Youtube extends Component {
     this.state = {
       trends: [],
       isError: false,
-      likeCountLogs: []
+      isLoading: false,
+      likeCountLogs: [],
+      nextPageToken: '',
+      pageInfo: null
     };
     this.likeCount = this.likeCount.bind(this);
+    this.loadVideos = this.loadVideos.bind(this);
   }
 
   componentWillMount() {
     this.props.setTitle('YOUTUBE');
     this.props.onChanges(() => this.loadVideos());
-  }
-  componentDidUpdate() {
-    this.props.onChanges(() => this.loadVideos());
-  }
 
+    //using 
+    this.props.loadVideos(this.loadVideos);
+  }
+  
+  componentDidMount() {
+    window.addEventListener('scroll', this.onScroll, false);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.onScroll, false);
+  }
+  onScroll = () => {
+    if((window.innerHeight + window.scrollY) >= 
+      (document.body.offsetHeight - 200) && !this.state.isLoading ){
+        if(this.state.nextPageToken) {
+          this.loadPaginatedVideos();
+        }
+    }
+  }
+  async loadPaginatedVideos() {
+    //set state
+    this.setState({isLoading: true});
+    const { nextPageToken } = this.state;
+    
+    Axios.all(await service.getPaginatedTrendingVideos(this.props.config.maxVideosToLoad
+      , this.props.config.defaultCategoryId, this.props.config.defaultRegion, nextPageToken))
+          .then((data) => {
+            this.setState({
+             trends: this.state.trends.concat(data[0]['items']),
+             nextPageToken: data[0]['nextPageToken'],
+             pageInfo: data[0]['pageInfo'],
+             isError: false,
+             isLoading: false
+           });
+          })
+          .catch((err) => {
+            this.setState({isError: true});
+            console.log(err);
+          });
+  }
   async loadVideos() {
     Axios.all(await service.getTrendingVideos(this.props.config.maxVideosToLoad
       , this.props.config.defaultCategoryId, this.props.config.defaultRegion))
          .then((data) => {
            this.setState({
-             trends: data,
+             trends: data[0]['items'],
+             nextPageToken: data[0]['nextPageToken'],
+             pageInfo: data[0]['pageInfo'],
              isError: false
            });
          })
@@ -73,9 +117,7 @@ class Youtube extends Component {
     }
   }
   youtubeCard() {
-    let items = [];
-    let trends =  this.state.trends.map((videos, index) => {
-      items.push(
+    return this.state.trends.map((videos, index) => 
         <div key={index} className="card-container">
           <div className="card" onClick={this.openVideo.bind(videos.id)}>
             <div className="img-container">
@@ -103,17 +145,6 @@ class Youtube extends Component {
           </div>
         </div>
       );
-      
-    });
-
-    return ( 
-      <InfiniteScroll
-        pageStart={0}
-        loadMore={this.loadVideos()}
-        hasMore={true}
-        loader={<div className="loader" key={0}>Loading ...</div>}>
-            {items}
-    </InfiniteScroll>);
   }
 
   errorOnPage() {
@@ -127,6 +158,7 @@ class Youtube extends Component {
     return !this.state.isError ? ( <div id="youtube">
       <div className="row">
         {this.youtubeCard()}
+        {(this.state.isLoading) ? (<p>Loading...</p>) : ''}
       </div>
     </div>) : (this.errorOnPage());
   }
@@ -138,7 +170,7 @@ Youtube.propTypes = {
   onChanges: PropTypes.func
 };
 
-export default Youtube;
+export default connect(null, {loadVideos})(Youtube)
 
 
 
