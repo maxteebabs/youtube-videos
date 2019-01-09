@@ -23,7 +23,6 @@ export class YoutubeService {
     };
     
     return axios.get('/', {params}).then((res) => {
-    
       const items = res.data.items
         .map((item) => new VideoClass(item))
         .filter((item) => item.id !== '');
