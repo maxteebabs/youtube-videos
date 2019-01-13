@@ -12,7 +12,6 @@ const onChanges = (fn) => {
   if (fn) {
     store = fn;
   }
-
   store();
 };
 let titleStore = '';

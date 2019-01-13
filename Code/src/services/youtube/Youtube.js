@@ -8,31 +8,32 @@ import { VideoCategory }  from '../../models/videoCategory.class';
 export class YoutubeService {
   getTrendingVideos(videosPerPage = appConfig.maxVideosToLoad
     , categoryID= appConfig.defaultCategoryId
-    , regionCode = appConfig.defaultRegion) {
+    , regionCode = appConfig.defaultRegion
+    , nextPageToken = '') {
     const axios = Axios.create({
       baseURL: appConfig.getYoutubeEndPoint('videos')
     });
-
     const params = {
       part: appConfig.partsToLoad,
       chart: appConfig.chart,
       videoCategoryId: localStorage.getItem('categoryID') || categoryID,
       regionCode: localStorage.getItem('countryCode') || regionCode,
       maxResults: videosPerPage,
-      key: appConfig.youtubeApiKey
+      key: appConfig.youtubeApiKey,
+      pageToken: nextPageToken
     };
-    
+
     return axios.get('/', {params}).then((res) => {
-      const items = res.data.items
-        .map((item) => new VideoClass(item))
-        .filter((item) => item.id !== '');
-      let result = [{
-        items: items,
-        pageInfo: res.data.pageInfo,
-        nextPageToken: res.data.nextPageToken
-      }];
-      return result;
-    }).catch((err) => err);
+        const items = res.data.items
+          .map((item) => new VideoClass(item))
+          .filter((item) => item.id !== '');
+        let result = [{
+          items: items,
+          pageInfo: res.data.pageInfo,
+          nextPageToken: res.data.nextPageToken
+        }];
+        return result;
+      }).catch((err) => err);    
   }
 
   getPaginatedTrendingVideos(videosPerPage = appConfig.maxVideosToLoad

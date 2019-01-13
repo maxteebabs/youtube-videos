@@ -11,9 +11,10 @@ import PropTypes from 'prop-types';
 import { YoutubeService } from '../../services/youtube/Youtube';
 import './Youtube.scss';
 import InfiniteScroll from 'react-infinite-scroller';
-
 import { loadVideos } from '../../redux/actions';
-import { connect } from 'react-redux';
+
+// import { loadVideos } from '../../redux/actions';
+// import { connect } from 'react-redux';
 
 const service = new YoutubeService();
 
@@ -26,6 +27,7 @@ class Youtube extends Component {
       isLoading: false,
       likeCountLogs: [],
       nextPageToken: '',
+      multipleLoads: false,
       pageInfo: null
     };
     this.likeCount = this.likeCount.bind(this);
@@ -35,9 +37,8 @@ class Youtube extends Component {
   componentWillMount() {
     this.props.setTitle('YOUTUBE');
     this.props.onChanges(() => this.loadVideos());
-
     //using 
-    this.props.loadVideos(this.loadVideos);
+    // this.props.loadVideos(this.loadVideos);
   }
   
   componentDidMount() {
@@ -76,20 +77,58 @@ class Youtube extends Component {
           });
   }
   async loadVideos() {
-    Axios.all(await service.getTrendingVideos(this.props.config.maxVideosToLoad
-      , this.props.config.defaultCategoryId, this.props.config.defaultRegion))
-         .then((data) => {
-           this.setState({
-             trends: data[0]['items'],
-             nextPageToken: data[0]['nextPageToken'],
-             pageInfo: data[0]['pageInfo'],
-             isError: false
+    this.setState({multipleLoads: true});
+    //before making a call // lets check the maxvideos to load
+    if(this.props.config.maxVideosToLoad > 50 && this.state.multipleLoads) {
+      let videosPerPage = this.props.config.maxVideosToLoad;
+      //get the number of rounds to go make a call
+       const rounds = Math.ceil(videosPerPage / 50);
+       //get the remainder
+       const remainder = Math.ceil(videosPerPage % 50);
+       this.setState({trends: []});
+       //we will do a loop to know the number of rounds
+       for(let i = 1; i <= rounds; i++) {
+          let maxVideosToLoad = 50;
+          if(i == rounds) {
+            this.setState({multipleLoads: false});
+            maxVideosToLoad = remainder;
+          }
+          Axios.all(await service.getTrendingVideos(maxVideosToLoad
+            , this.props.config.defaultCategoryId, this.props.config.defaultRegion))
+          .then((data) => {
+            this.setState({
+              trends: this.state.trends.concat(data[0]['items']),
+              nextPageToken: data[0]['nextPageToken'],
+              pageInfo: data[0]['pageInfo'],
+              isError: false
+            });
+          })
+          .catch((err) => {
+            this.setState({isError: true});
+            console.log(err);
+          });
+       }
+       this.props.config.nextPageToken = '';
+    }else {
+      if(this.props.config.maxVideosToLoad > 50) {
+        this.props.config.maxVideosToLoad = 50;
+      }
+      Axios.all(await service.getTrendingVideos(this.props.config.maxVideosToLoad
+        , this.props.config.defaultCategoryId, this.props.config.defaultRegion))
+           .then((data) => {
+             this.setState({
+               trends: data[0]['items'],
+               nextPageToken: data[0]['nextPageToken'],
+               pageInfo: data[0]['pageInfo'],
+               isError: false
+             });
+  
+           })
+           .catch((err) => {
+             this.setState({isError: true});
+             console.log(err);
            });
-         })
-         .catch((err) => {
-           this.setState({isError: true});
-           console.log(err);
-         });
+    }
   }
 
   openVideo() {
@@ -99,6 +138,7 @@ class Youtube extends Component {
     let {likeCountLogs} = this.state;
     let trends = [...this.state.trends];
     let trend = {...trends[index]};
+
     if(this.state.likeCountLogs.includes(index)) {
       trend.likeCount = --trend.likeCount;
     }else {
@@ -108,13 +148,17 @@ class Youtube extends Component {
     trends[index] = trend;
     this.setState({trends});
 
-    //lets check if the index exists
+    //lets check if the index exists and remove it
     if(this.state.likeCountLogs.includes(index)) {
-      this.setState({ likeCountLogs: likeCountLogs.splice(likeCountLogs.indexOf(index), 1) });
+      console.log('before',likeCountLogs.splice(0, 1));
+      console.log('after',likeCountLogs.splice(0, 1));
+      // this.setState({ likeCountLogs: likeCountLogs.splice(0, 1) });
     }else{
       likeCountLogs.push(index);
       this.setState({ likeCountLogs: likeCountLogs});
     }
+
+
   }
   youtubeCard() {
     return this.state.trends.map((videos, index) => 
@@ -169,8 +213,8 @@ Youtube.propTypes = {
   config   : PropTypes.object,
   onChanges: PropTypes.func
 };
-
-export default connect(null, {loadVideos})(Youtube)
+export default Youtube;
+// export default connect(null, {loadVideos})(Youtube)
 
 
 
