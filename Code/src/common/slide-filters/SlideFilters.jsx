@@ -1,4 +1,3 @@
-/* eslint-disable */
 import 'rc-slider/assets/index.css';
 import 'rc-tooltip/assets/bootstrap.css';
 import React, { Component } from 'react';
@@ -16,8 +15,6 @@ import './SlideFilters.scss';
 import { appConfig } from '../../config';
 import Axios from 'axios';
 import { YoutubeService } from '../../services/youtube/Youtube';
-
-// import {connect} from 'react-redux';
 
 const countryList = appConfig.countryList;
 
@@ -105,13 +102,13 @@ class SlideFilters extends Component {
     })
     .catch((err) => {
       this.setState({isError: true});
-      console.log(err);
+      // console.log(err);
     });
   }
   handleCountryFilter(inputValue) {
     //filter from the country array
     let country = countryList.find(
-      (country) => country.name.toLowerCase() == inputValue.toLowerCase());
+      (country) => country.name.toLowerCase() === inputValue.toLowerCase());
     if(country) {
       //store in local storage
       localStorage.setItem('countryName', country.name);
@@ -122,7 +119,7 @@ class SlideFilters extends Component {
   }
   handleCategoryFilter(inputValue) {
     let category = this.state.categoriesList.find(
-      (category) => category.name.toLowerCase() == inputValue.toLowerCase());
+      (category) => category.name.toLowerCase() === inputValue.toLowerCase());
     if(category) {
       localStorage.setItem('categoryName', category.name);
       localStorage.setItem('categoryID', category.id);

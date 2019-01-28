@@ -8,7 +8,7 @@ it('renders without crashing', () => {
 it('getTrendingVideos function', async () => {
   const service = new YoutubeService();
   const result = await service.getTrendingVideos();
-  expect(result.length).toEqual(24);
+  expect(result[0]['items'].length).toEqual(24);
 });
 it('should testTrendingVideoCategory function', async () => {
   const service = new YoutubeService();

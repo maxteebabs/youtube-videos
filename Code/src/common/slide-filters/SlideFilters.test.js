@@ -12,8 +12,13 @@ const onChanges = (fn) => {
   store();
 };
 
+const toggleDrawer = (open) => () => {
+  
+};
+
 it('renders without crashing', () => {
   const div = document.createElement('div');
-  ReactDOM.render(<SlideFilters config={config} onChanges={onChanges}/>, div);
+  ReactDOM.render(<SlideFilters config={config} onChanges={onChanges}
+     toggleDrawer={toggleDrawer}/>, div);
   ReactDOM.unmountComponentAtNode(div);
 });

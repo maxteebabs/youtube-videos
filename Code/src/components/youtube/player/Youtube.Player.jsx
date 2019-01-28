@@ -1,3 +1,4 @@
+/*eslint-disable */
 import React, {Component} from 'react';
 import { Link } from 'react-router-dom';
 import './Youtube.Player.scss';
@@ -29,6 +30,7 @@ class YoutubePlayer extends Component {
 
   }
   componentWillMount() {
+    console.log(this.props);
     this.props.toggleFilterButton('hide');
   }
 

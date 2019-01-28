@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { Component } from 'react';
 import Axios from 'axios';
 import MovieIcon from '@material-ui/icons/Movie';
@@ -10,12 +9,6 @@ import PropTypes from 'prop-types';
 
 import { YoutubeService } from '../../services/youtube/Youtube';
 import './Youtube.scss';
-import InfiniteScroll from 'react-infinite-scroller';
-import { loadVideos } from '../../redux/actions';
-
-// import { loadVideos } from '../../redux/actions';
-// import { connect } from 'react-redux';
-
 const service = new YoutubeService();
 
 class Youtube extends Component {
@@ -73,7 +66,7 @@ class Youtube extends Component {
           })
           .catch((err) => {
             this.setState({isError: true});
-            console.log(err);
+            // console.log(err);
           });
   }
   async loadVideos() {
@@ -89,7 +82,7 @@ class Youtube extends Component {
        //we will do a loop to know the number of rounds
        for(let i = 1; i <= rounds; i++) {
           let maxVideosToLoad = 50;
-          if(i == rounds) {
+          if(i === rounds) {
             this.setState({multipleLoads: false});
             maxVideosToLoad = remainder;
           }
@@ -105,7 +98,7 @@ class Youtube extends Component {
           })
           .catch((err) => {
             this.setState({isError: true});
-            console.log(err);
+            // console.log(err);
           });
        }
        this.props.config.nextPageToken = '';
@@ -126,7 +119,7 @@ class Youtube extends Component {
            })
            .catch((err) => {
              this.setState({isError: true});
-             console.log(err);
+            //  console.log(err);
            });
     }
   }
@@ -150,9 +143,7 @@ class Youtube extends Component {
 
     //lets check if the index exists and remove it
     if(this.state.likeCountLogs.includes(index)) {
-      console.log('before',likeCountLogs.splice(0, 1));
-      console.log('after',likeCountLogs.splice(0, 1));
-      // this.setState({ likeCountLogs: likeCountLogs.splice(0, 1) });
+      this.setState({ likeCountLogs: likeCountLogs.splice(0, 1) });
     }else{
       likeCountLogs.push(index);
       this.setState({ likeCountLogs: likeCountLogs});
@@ -178,7 +169,7 @@ class Youtube extends Component {
                 <span>{videos.viewCount}</span>
               </div>
               <div className="likeCount" onClick={(e) => { e.stopPropagation(); 
-                              this.likeCount(index)}}>
+                              this.likeCount(index);}}>
                 <FavoriteIcon/>
                 <span>{videos.likeCount}</span>
               </div>
